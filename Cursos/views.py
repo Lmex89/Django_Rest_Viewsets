@@ -8,19 +8,25 @@ from rest_framework import status
 from Cursos.models import Alumnos, Clases
 from Cursos.serializers import AlumnosSerializer, CursosSerializer
 
+
 class CursosViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Clases.objects.all()
     serializer_class = CursosSerializer
+
     def get_queryset(self, request):
-        data ={key:value for key, value in self.request.query_params.items()}
+        data ={ key:value for key, value in self.request.query_params.items() if key not in ['page']}
+
         return self.queryset.filter(**data)
 
     def list(self,request,*args,**kwargs):
         #item_user_ownwer = Clases.objects.filter(owner_user=self.request.user)
         item = self.get_queryset(request)
-        print( item)
-        serializer = self.get_serializer(item,many=True)
+        page = self.paginate_queryset(item)
+        if page:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(item, many=True)
         return Response(serializer.data)
 
     @action(detail=True, methods=['DELETE','POST'])
@@ -41,6 +47,8 @@ class CursosViewSet(viewsets.ModelViewSet):
             alumno.delete()
             print(clase.alumnos)
             return Response(status=status.HTTP_200_OK)
+
+
 class AlumnosViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset=Alumnos.objects.all()
