@@ -4,11 +4,8 @@ import uuid
 
 
 class Alumnos(models.Model):
-    id = models.UUIDField(default=uuid.uuid4,
-                          primary_key=True)
-    nombre = models.CharField(max_length=32,
-                              blank=True,
-                              null=True)
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True)
+    nombre = models.CharField(max_length=32, blank=True, null=True)
     edad = models.IntegerField()
     email = models.CharField(max_length=32)
 
@@ -17,14 +14,22 @@ class Alumnos(models.Model):
 
 
 class Clases(models.Model):
-    id = models.UUIDField(default=uuid.uuid4,
-                          primary_key=True)
-    nombre = models.CharField(max_length=30,
-                              blank=True,
-                              null=True)
-    alumnos = models.ManyToManyField(Alumnos,
-                                     related_name='alumnos')
-    owner_user = models.ForeignKey(User,null=True,blank=True,on_delete=models.CASCADE)
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True)
+    nombre = models.CharField(max_length=30, blank=True, null=True)
+    alumnos = models.ManyToManyField(Alumnos, related_name="alumnos")
+    owner_user = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        return self.nombre
+
+
+class Maestros(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True)
+    nombre = models.CharField(max_length=25, blank=True, null=True)
+    email = models.CharField(max_length=24, blank=True, null=True)
+    cursos = models.ManyToManyField(Clases, related_name='cursos')
 
     def __str__(self):
         return self.nombre
