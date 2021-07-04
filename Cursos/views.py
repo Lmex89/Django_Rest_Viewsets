@@ -14,13 +14,18 @@ class CursosViewSet(viewsets.ModelViewSet):
     serializer_class = CursosSerializer
 
     def get_queryset(self, request):
-        data = {key: value for key, value in self.request.query_params.items()}
+        data = {key: value for key, value in self.request.query_params.items() if key not in [
+            'page']}
+
         return self.queryset.filter(**data)
 
     def list(self, request, *args, **kwargs):
         # item_user_ownwer = Clases.objects.filter(owner_user=self.request.user)
         item = self.get_queryset(request)
-        print(item)
+        page = self.paginate_queryset(item)
+        if page:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(item, many=True)
         return Response(serializer.data)
 
@@ -55,3 +60,20 @@ class MaestrosViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Maestros.objects.all()
     serializer_class = MaestrosSerializer
+
+    def get_queryset(self, request):
+        data = {key: value for key, value in self.request.query_params.items() if key not in [
+            'page']}
+
+        return self.queryset.filter(**data)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
